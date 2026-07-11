@@ -170,7 +170,7 @@ pnpm run start:dev
 
 ## Contributing
 
-Follow the same end-of-task discipline as the main `chioma` repo: type-check, lint, build, and test before considering a task done (see `chioma/claude.md` for the exact commands once this repo's `package.json` exists).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, the `pnpm run ci` checklist, and PR expectations.
 
 ## License
 

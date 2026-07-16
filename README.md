@@ -158,19 +158,23 @@ Embed the assistant in `chioma/frontend` (landlord, tenant, and agent dashboards
 
 ## Getting started
 
-Not yet scaffolded. Once the NestJS app exists:
-
 ```bash
-git clone <this-repo>
-cd chioma-agent
+git clone https://github.com/chioma-housing-protocol-I/chioma-ai-agent.git
+cd chioma-ai-agent
 pnpm install
-cp .env.example .env   # set OPENAI_API_KEY, CHIOMA_API_URL, REDIS_URL, STELLAR_NETWORK, STELLAR_HORIZON_URL
+cp .env.example .env   # set LLM_PROVIDER, LLM_MODEL, and the matching API key
 pnpm run start:dev
 ```
 
+Run the full check pipeline with `make check` (lint + typecheck + test) before opening a PR.
+
 ## Contributing
 
-Follow the same end-of-task discipline as the main `chioma` repo: type-check, lint, build, and test before considering a task done (see `chioma/claude.md` for the exact commands once this repo's `package.json` exists).
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for local setup, required checks, and PR expectations — every PR must satisfy the linked issue's Acceptance Criteria and include a screenshot or short recording of the change. Questions or want to claim an issue? Join the contributor chat: https://t.me/chiomagroup
+
+## Security
+
+Found a vulnerability? Please don't open a public issue — see [SECURITY.md](./SECURITY.md) for how to report it privately.
 
 ## License
 

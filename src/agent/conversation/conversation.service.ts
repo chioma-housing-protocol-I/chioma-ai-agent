@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
 import { LLM_PROVIDER, LlmProvider } from '../llm/llm-provider.interface';
 import { LlmMessage } from '../llm/llm.types';
@@ -6,8 +6,14 @@ import { SESSION_STORE, SessionStore } from '../memory/session-store.interface';
 import { ToolRegistry } from '../../tools/tools.registry';
 import { ToolContext } from '../../tools/tool.interface';
 import { SYSTEM_PROMPT } from './system-prompt';
+import { applyHistoryWindow } from './history-window';
 
 const MAX_TOOL_ITERATIONS = 8;
+
+/** Falls back to AppConfig's default when no provider registers this token. */
+const DEFAULT_HISTORY_TOKEN_BUDGET = 24000;
+
+export const HISTORY_TOKEN_BUDGET = Symbol('HISTORY_TOKEN_BUDGET');
 
 @Injectable()
 export class ConversationService {
@@ -15,6 +21,9 @@ export class ConversationService {
     @Inject(LLM_PROVIDER) private readonly llmProvider: LlmProvider,
     @Inject(SESSION_STORE) private readonly sessionStore: SessionStore,
     private readonly toolRegistry: ToolRegistry,
+    @Optional()
+    @Inject(HISTORY_TOKEN_BUDGET)
+    private readonly historyTokenBudget: number = DEFAULT_HISTORY_TOKEN_BUDGET,
   ) {}
 
   async handleTurn(
@@ -23,7 +32,14 @@ export class ConversationService {
     toolContext: ToolContext,
   ): Promise<string> {
     const history = await this.sessionStore.getHistory(sessionId);
-    const messages: LlmMessage[] = [...history, { role: 'user', content: userInput }];
+    const windowedHistory = applyHistoryWindow(
+      history,
+      this.historyTokenBudget,
+    );
+    const messages: LlmMessage[] = [
+      ...windowedHistory,
+      { role: 'user', content: userInput },
+    ];
     const newMessages: LlmMessage[] = [{ role: 'user', content: userInput }];
 
     const systemMessages: LlmMessage[] = history.length
@@ -41,7 +57,10 @@ export class ConversationService {
       messages.push(result.message);
       newMessages.push(result.message);
 
-      if (result.stopReason !== 'tool_calls' || !result.message.toolCalls?.length) {
+      if (
+        result.stopReason !== 'tool_calls' ||
+        !result.message.toolCalls?.length
+      ) {
         await this.sessionStore.appendMessages(sessionId, newMessages);
         return result.message.content;
       }

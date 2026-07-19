@@ -17,6 +17,12 @@ export interface AppConfig {
   sessionStore: SessionStore;
   redisUrl: string;
   sessionTtlSeconds: number;
+  /**
+   * Max tokens of *prior session history* sent to the LLM per turn (the
+   * current user message, system prompt, and tool definitions are on top of
+   * this). See ConversationService.handleTurn + applyHistoryWindow.
+   */
+  historyTokenBudget: number;
 }
 
 function isNonEmpty(value: unknown): value is string {
@@ -55,6 +61,13 @@ export function validateEnvironment(
     errors.push('REDIS_URL is required when SESSION_STORE=redis');
   }
 
+  if (isNonEmpty(env.HISTORY_TOKEN_BUDGET)) {
+    const parsedBudget = Number(env.HISTORY_TOKEN_BUDGET);
+    if (!Number.isFinite(parsedBudget) || parsedBudget <= 0) {
+      errors.push('HISTORY_TOKEN_BUDGET must be a positive number');
+    }
+  }
+
   if (errors.length > 0) {
     throw new Error(
       `Invalid environment configuration:\n  - ${errors.join('\n  - ')}`,
@@ -76,8 +89,9 @@ export function loadConfig(): AppConfig {
     chiomaApiToken: process.env.CHIOMA_API_TOKEN,
     sessionStore: (process.env.SESSION_STORE as SessionStore) ?? 'memory',
     redisUrl: process.env.REDIS_URL ?? 'redis://localhost:6379',
-    sessionTtlSeconds: parseInt(
-      process.env.SESSION_TTL_SECONDS ?? '3600',
+    sessionTtlSeconds: parseInt(process.env.SESSION_TTL_SECONDS ?? '3600', 10),
+    historyTokenBudget: parseInt(
+      process.env.HISTORY_TOKEN_BUDGET ?? '24000',
       10,
     ),
   };

@@ -33,9 +33,9 @@ describe('validateEnvironment', () => {
   });
 
   it('requires CHIOMA_API_URL', () => {
-    expect(() =>
-      validateEnvironment({ ANTHROPIC_API_KEY: 'key' }),
-    ).toThrow(/CHIOMA_API_URL is required/);
+    expect(() => validateEnvironment({ ANTHROPIC_API_KEY: 'key' })).toThrow(
+      /CHIOMA_API_URL is required/,
+    );
   });
 
   it('requires REDIS_URL when SESSION_STORE=redis', () => {
@@ -58,5 +58,30 @@ describe('validateEnvironment', () => {
     expect(() => validateEnvironment({})).toThrow(
       /ANTHROPIC_API_KEY is required.*CHIOMA_API_URL is required/s,
     );
+  });
+
+  it('accepts a valid HISTORY_TOKEN_BUDGET', () => {
+    expect(() =>
+      validateEnvironment({ ...baseEnv, HISTORY_TOKEN_BUDGET: '5000' }),
+    ).not.toThrow();
+  });
+
+  it('accepts a missing HISTORY_TOKEN_BUDGET (falls back to the default)', () => {
+    expect(() => validateEnvironment(baseEnv)).not.toThrow();
+  });
+
+  it('rejects a non-numeric HISTORY_TOKEN_BUDGET', () => {
+    expect(() =>
+      validateEnvironment({ ...baseEnv, HISTORY_TOKEN_BUDGET: 'not-a-number' }),
+    ).toThrow(/HISTORY_TOKEN_BUDGET must be a positive number/);
+  });
+
+  it('rejects a zero or negative HISTORY_TOKEN_BUDGET', () => {
+    expect(() =>
+      validateEnvironment({ ...baseEnv, HISTORY_TOKEN_BUDGET: '0' }),
+    ).toThrow(/HISTORY_TOKEN_BUDGET must be a positive number/);
+    expect(() =>
+      validateEnvironment({ ...baseEnv, HISTORY_TOKEN_BUDGET: '-100' }),
+    ).toThrow(/HISTORY_TOKEN_BUDGET must be a positive number/);
   });
 });

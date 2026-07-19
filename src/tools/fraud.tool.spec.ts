@@ -57,7 +57,6 @@ describe('fraud tools', () => {
       getFraudSignals.mockResolvedValue({
         riskScore: 0.05,
         signals: [],
-        flaggedAt: null,
       });
       const tool = new GetFraudSignalsTool(client);
 
@@ -67,7 +66,6 @@ describe('fraud tools', () => {
       expect(JSON.parse(result)).toEqual({
         riskScore: 0.05,
         signals: [],
-        flaggedAt: null,
       });
     });
 

@@ -173,6 +173,7 @@ describe('disputes tools', () => {
       const { client, submitDisputeEvidence } = makeClient();
       submitDisputeEvidence.mockResolvedValue({
         disputeId: 'disp_123',
+        evidenceCount: 0,
         status: 'in_arbitration',
       });
       const tool = new SubmitDisputeEvidenceTool(client);

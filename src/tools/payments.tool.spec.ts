@@ -104,7 +104,12 @@ describe('payments tools', () => {
 
     it('handles payments without notes', async () => {
       const { client, makePayment } = makeClient();
-      makePayment.mockResolvedValue({ transactionId: 'txn_456', status: 'completed' });
+      makePayment.mockResolvedValue({
+        transactionId: 'txn_456',
+        status: 'completed',
+        amount: 150000,
+        timestamp: '2026-07-19T12:00:00Z',
+      });
       const tool = new MakePaymentTool(client);
 
       await tool.execute(

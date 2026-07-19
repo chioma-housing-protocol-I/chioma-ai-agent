@@ -386,6 +386,7 @@ export class ChiomaApiClient {
     );
     return response.data;
   }
+  private async get<T>(
     path: string,
     accessToken: string,
     params?: Record<string, unknown>,

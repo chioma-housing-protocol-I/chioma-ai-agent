@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { ChatMessageDto } from './chat-message.dto';
+import { CHAT_MESSAGE_MAX_LENGTH, ChatMessageDto } from './chat-message.dto';
 
 describe('ChatMessageDto', () => {
   it('is valid with just a message', async () => {
@@ -33,5 +33,16 @@ describe('ChatMessageDto', () => {
     const errors = await validate(dto);
 
     expect(errors.some((e) => e.property === 'message')).toBe(true);
+  });
+
+  it('rejects a message that exceeds the max length', async () => {
+    const dto = plainToInstance(ChatMessageDto, {
+      message: 'x'.repeat(CHAT_MESSAGE_MAX_LENGTH + 1),
+    });
+
+    const errors = await validate(dto);
+
+    expect(errors).not.toHaveLength(0);
+    expect(errors[0].property).toBe('message');
   });
 });

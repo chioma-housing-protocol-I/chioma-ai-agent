@@ -32,6 +32,40 @@ describe('validateEnvironment', () => {
     ).not.toThrow();
   });
 
+  it('accepts a valid LLM_MODEL for the anthropic provider', () => {
+    expect(() =>
+      validateEnvironment({ ...baseEnv, LLM_MODEL: 'claude-opus-4-8' }),
+    ).not.toThrow();
+  });
+
+  it('rejects an unknown LLM_MODEL', () => {
+    expect(() =>
+      validateEnvironment({ ...baseEnv, LLM_MODEL: 'claude-opus-4.8-typo' }),
+    ).toThrow(/LLM_MODEL .* is not a recognized model/);
+  });
+
+  it('accepts a valid LLM_MODEL for the openai provider', () => {
+    expect(() =>
+      validateEnvironment({
+        ...baseEnv,
+        LLM_PROVIDER: 'openai',
+        OPENAI_API_KEY: 'key',
+        LLM_MODEL: 'gpt-4o',
+      }),
+    ).not.toThrow();
+  });
+
+  it('rejects a model that belongs to a different provider', () => {
+    expect(() =>
+      validateEnvironment({
+        ...baseEnv,
+        LLM_PROVIDER: 'openai',
+        OPENAI_API_KEY: 'key',
+        LLM_MODEL: 'claude-opus-4-8',
+      }),
+    ).toThrow(/LLM_MODEL .* is not a recognized model/);
+  });
+
   it('requires CHIOMA_API_URL', () => {
     expect(() => validateEnvironment({ ANTHROPIC_API_KEY: 'key' })).toThrow(
       /CHIOMA_API_URL is required/,

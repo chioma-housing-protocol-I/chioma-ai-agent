@@ -79,19 +79,19 @@ Conversation   Tool-Calling Layer      Memory / Session Store
 ```text
 personal/projects/
 ├── chioma/           # product monorepo: backend (NestJS), frontend (Next.js), contract (Soroban/Rust)
-└── chioma-agent/      # this repo — standalone AI agent service, consumes chioma's backend API
+└── chioma-ai-agent/   # this repo — standalone AI agent service, consumes chioma's backend API
 ```
 
-`chioma-agent` does not import `chioma` code directly. It integrates over HTTP against the backend's REST API (see `backend/openapi.json` in the main repo) and, for read-heavy status checks, may query Stellar Horizon directly using the same network config (`STELLAR_NETWORK`, `STELLAR_HORIZON_URL`) as `chioma/frontend`.
+`chioma-ai-agent` does not import `chioma` code directly. It integrates over HTTP against the backend's REST API (see `backend/openapi.json` in the main repo) and, for read-heavy status checks, may query Stellar Horizon directly using the same network config (`STELLAR_NETWORK`, `STELLAR_HORIZON_URL`) as `chioma/frontend`.
 
 ---
 
-## Proposed file structure
+## Repository structure
 
-The repo currently only has `README.md`, `LICENSE`, and a NestJS-flavored `.gitignore` — no code yet. Proposed layout, mirroring the conventions already used in `chioma/backend`:
+The implemented layout mirrors the conventions used in `chioma/backend`:
 
 ```text
-chioma-agent/
+chioma-ai-agent/
 ├── src/
 │   ├── main.ts                     # app bootstrap
 │   ├── app.module.ts

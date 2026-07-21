@@ -14,6 +14,7 @@ export interface AppConfig {
   anthropicApiKey?: string;
   chiomaApiUrl: string;
   chiomaApiToken?: string;
+  stellarHorizonUrl: string;
   sessionStore: SessionStore;
   redisUrl: string;
   sessionTtlSeconds: number;
@@ -28,6 +29,23 @@ export interface AppConfig {
 function isNonEmpty(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
+
+/**
+ * Accepted `LLM_MODEL` values per provider. A typo'd or deprecated model is
+ * rejected at boot (see validateEnvironment) rather than surfacing as a
+ * confusing runtime API error on the first chat request. Extend these lists as
+ * new models are adopted.
+ */
+const LLM_MODEL_ALLOWLIST: Record<LlmProvider, readonly string[]> = {
+  anthropic: [
+    'claude-opus-4-8',
+    'claude-opus-4-7',
+    'claude-sonnet-5',
+    'claude-sonnet-4-6',
+    'claude-haiku-4-5',
+  ],
+  openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4-turbo'],
+};
 
 /**
  * Wired into ConfigModule.forRoot({ validate }) so misconfiguration fails at
@@ -47,6 +65,19 @@ export function validateEnvironment(
   }
   if (llmProvider === 'anthropic' && !isNonEmpty(env.ANTHROPIC_API_KEY)) {
     errors.push('ANTHROPIC_API_KEY is required when LLM_PROVIDER=anthropic');
+  }
+
+  // Only validate the model against a known provider's allowlist. When
+  // LLM_MODEL is unset, loadConfig() falls back to a valid default, so an
+  // absent value is intentionally allowed here.
+  if (llmProvider === 'openai' || llmProvider === 'anthropic') {
+    const allowed = LLM_MODEL_ALLOWLIST[llmProvider];
+    if (isNonEmpty(env.LLM_MODEL) && !allowed.includes(env.LLM_MODEL)) {
+      errors.push(
+        `LLM_MODEL "${env.LLM_MODEL}" is not a recognized model for ` +
+          `LLM_PROVIDER=${llmProvider}. Allowed models: ${allowed.join(', ')}`,
+      );
+    }
   }
 
   if (!isNonEmpty(env.CHIOMA_API_URL)) {
@@ -87,6 +118,8 @@ export function loadConfig(): AppConfig {
     anthropicApiKey: process.env.ANTHROPIC_API_KEY,
     chiomaApiUrl: process.env.CHIOMA_API_URL ?? 'http://localhost:3000',
     chiomaApiToken: process.env.CHIOMA_API_TOKEN,
+    stellarHorizonUrl:
+      process.env.STELLAR_HORIZON_URL ?? 'https://horizon-testnet.stellar.org',
     sessionStore: (process.env.SESSION_STORE as SessionStore) ?? 'memory',
     redisUrl: process.env.REDIS_URL ?? 'redis://localhost:6379',
     sessionTtlSeconds: parseInt(process.env.SESSION_TTL_SECONDS ?? '3600', 10),

@@ -14,6 +14,7 @@ export interface AppConfig {
   anthropicApiKey?: string;
   chiomaApiUrl: string;
   chiomaApiToken?: string;
+  stellarHorizonUrl: string;
   sessionStore: SessionStore;
   redisUrl: string;
   sessionTtlSeconds: number;
@@ -104,6 +105,8 @@ export function loadConfig(): AppConfig {
     anthropicApiKey: process.env.ANTHROPIC_API_KEY,
     chiomaApiUrl: process.env.CHIOMA_API_URL ?? 'http://localhost:3000',
     chiomaApiToken: process.env.CHIOMA_API_TOKEN,
+    stellarHorizonUrl:
+      process.env.STELLAR_HORIZON_URL ?? 'https://horizon-testnet.stellar.org',
     sessionStore: (process.env.SESSION_STORE as SessionStore) ?? 'memory',
     redisUrl: process.env.REDIS_URL ?? 'redis://localhost:6379',
     sessionTtlSeconds: parseInt(

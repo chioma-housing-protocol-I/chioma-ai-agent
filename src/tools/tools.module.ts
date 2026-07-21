@@ -10,15 +10,60 @@ import {
   GetDescriptionSuggestionTool,
   GetPricingSuggestionTool,
 } from './wizard.tool';
+import { GetPaymentStatusTool, MakePaymentTool, GetChargeBreakdownTool } from './payments.tool';
+import {
+  GetEscrowStatusTool,
+  RequestEscrowReleaseTool,
+  FileEscrowClaimTool,
+} from './escrow.tool';
+import {
+  GetDisputeStatusTool,
+  FileDisputeTool,
+  SubmitDisputeEvidenceTool,
+  AcceptDisputeSettlementTool,
+} from './disputes.tool';
+import {
+  GetFraudSignalsTool,
+  GetFraudAlertsTool,
+  ReportFraudSuspicionTool,
+} from './fraud.tool';
+import {
+  GetNotificationsTool,
+  DismissNotificationTool,
+  SetNotificationPreferencesTool,
+} from './notifications.tool';
 import { AGENT_TOOLS, ToolRegistry } from './tools.registry';
 
 const TOOL_PROVIDERS = [
+  // Listings
   GetRecommendationsTool,
   GetMatchScoreTool,
   GetSimilarPropertiesTool,
+  // Wizard
   GetPricingSuggestionTool,
   GetDescriptionSuggestionTool,
   GetCompletenessScoreTool,
+  // Payments
+  GetPaymentStatusTool,
+  MakePaymentTool,
+  GetChargeBreakdownTool,
+  // Escrow
+  GetEscrowStatusTool,
+  RequestEscrowReleaseTool,
+  FileEscrowClaimTool,
+  // Disputes
+  GetDisputeStatusTool,
+  FileDisputeTool,
+  SubmitDisputeEvidenceTool,
+  AcceptDisputeSettlementTool,
+  // Fraud
+  GetFraudSignalsTool,
+  GetFraudAlertsTool,
+  ReportFraudSuspicionTool,
+  // Notifications
+  GetNotificationsTool,
+  DismissNotificationTool,
+  SetNotificationPreferencesTool,
 ];
 
 @Module({

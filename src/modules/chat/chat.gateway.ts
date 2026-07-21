@@ -1,7 +1,8 @@
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WsResponse } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
+import type { IncomingMessage } from 'http';
+import type WebSocket from 'ws';
 import { ConversationService } from '../../agent/conversation/conversation.service';
-import { ToolContext } from '../../tools/tool.interface';
 
 interface ChatRequest {
   message: string;
@@ -16,34 +17,29 @@ interface ChatResponse {
 @WebSocketGateway({ path: '/chat', cors: true })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(ChatGateway.name);
-  private readonly clientAuthHeaders = new WeakMap<any, string>();
+  private readonly clientAuthHeaders = new WeakMap<WebSocket, string>();
 
   constructor(private readonly conversationService: ConversationService) {}
 
-  handleConnection(client: any, ...args: any[]): void {
-    this.logger.log(`WebSocket client connected: ${client.id}`);
-    const request = args[0] as { headers?: Record<string, string> } | undefined;
-    const authorization = request?.headers?.authorization || request?.headers?.Authorization;
+  handleConnection(client: WebSocket, request?: IncomingMessage): void {
+    this.logger.log('WebSocket client connected');
+    const authorization = request?.headers?.authorization;
     if (authorization) {
       this.clientAuthHeaders.set(client, authorization);
     }
   }
 
-  handleDisconnect(client: any): void {
-    this.logger.log(`WebSocket client disconnected: ${client.id}`);
+  handleDisconnect(client: WebSocket): void {
+    this.logger.log('WebSocket client disconnected');
     this.clientAuthHeaders.delete(client);
   }
 
   @SubscribeMessage('message')
   async onMessage(
     @MessageBody() payload: ChatRequest,
-    @ConnectedSocket() client: any,
+    @ConnectedSocket() client: WebSocket,
   ): Promise<WsResponse<ChatResponse>> {
-    const authorization = this.clientAuthHeaders.get(client) ||
-      client?.handshake?.headers?.authorization ||
-      client?.upgradeReq?.headers?.authorization ||
-      client?._req?.headers?.authorization ||
-      client?.headers?.authorization;
+    const authorization = this.clientAuthHeaders.get(client);
     const accessToken = this.extractBearerToken(authorization);
     const sessionId = payload.sessionId ?? ConversationService.newSessionId();
     const reply = await this.conversationService.handleTurn(sessionId, payload.message, {

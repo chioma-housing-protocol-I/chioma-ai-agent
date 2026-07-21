@@ -2,12 +2,18 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { WsAdapter } from '@nestjs/platform-ws';
 import { AddressInfo } from 'net';
+import type { Server } from 'http';
 import WebSocket, { RawData } from 'ws';
 import { ChatGateway } from './chat.gateway';
 import { ConversationService } from '../../agent/conversation/conversation.service';
 
+interface ReplyEvent {
+  event: string;
+  data: { sessionId: string; reply: string };
+}
+
 describe('ChatGateway (e2e)', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
   let ws: WebSocket | null = null;
   let wsPort: number;
   const mockConversationService = {
@@ -25,7 +31,7 @@ describe('ChatGateway (e2e)', () => {
     app = moduleFixture.createNestApplication();
     app.useWebSocketAdapter(new WsAdapter(app));
     await app.listen(0);
-    const address = (app.getHttpServer() as any).address() as AddressInfo;
+    const address = app.getHttpServer().address() as AddressInfo;
     wsPort = address.port;
   });
 
@@ -50,17 +56,17 @@ describe('ChatGateway (e2e)', () => {
 
     ws.on('message', (message: RawData) => {
       try {
-        const payload = JSON.parse(message.toString());
+        const payload = JSON.parse((message as Buffer).toString()) as ReplyEvent;
         if (payload.event === 'reply') {
           expect(payload.data.sessionId).toBe('test-session');
           expect(typeof payload.data.reply).toBe('string');
           done();
         }
       } catch (err) {
-        done(err as Error);
+        done(err);
       }
     });
 
-    ws.on('error', (err: Error) => done(err));
+    ws.on('error', (err: Error) => { done(err); });
   }, 10000);
 });

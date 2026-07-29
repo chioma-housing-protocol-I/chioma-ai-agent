@@ -8,12 +8,14 @@ import { ToolContext } from '../../tools/tool.interface';
 import { SYSTEM_PROMPT } from './system-prompt';
 import { applyHistoryWindow } from './history-window';
 
-const MAX_TOOL_ITERATIONS = 8;
-
 /** Falls back to AppConfig's default when no provider registers this token. */
 const DEFAULT_HISTORY_TOKEN_BUDGET = 24000;
 
+/** Falls back to AppConfig's default when no provider registers this token. */
+const DEFAULT_MAX_TOOL_ITERATIONS = 8;
+
 export const HISTORY_TOKEN_BUDGET = Symbol('HISTORY_TOKEN_BUDGET');
+export const MAX_TOOL_ITERATIONS = Symbol('MAX_TOOL_ITERATIONS');
 
 @Injectable()
 export class ConversationService {
@@ -24,6 +26,9 @@ export class ConversationService {
     @Optional()
     @Inject(HISTORY_TOKEN_BUDGET)
     private readonly historyTokenBudget: number = DEFAULT_HISTORY_TOKEN_BUDGET,
+    @Optional()
+    @Inject(MAX_TOOL_ITERATIONS)
+    private readonly maxToolIterations: number = DEFAULT_MAX_TOOL_ITERATIONS,
   ) {}
 
   async handleTurn(
@@ -48,7 +53,7 @@ export class ConversationService {
 
     const tools = this.toolRegistry.getDefinitions();
 
-    for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
+    for (let iteration = 0; iteration < this.maxToolIterations; iteration++) {
       const result = await this.llmProvider.complete({
         messages: [...systemMessages, ...messages],
         tools,

@@ -6,6 +6,7 @@ import { ToolsModule } from '../tools/tools.module';
 import {
   ConversationService,
   HISTORY_TOKEN_BUDGET,
+  MAX_TOOL_ITERATIONS,
 } from './conversation/conversation.service';
 import { RootConfig } from '../config/env.validation';
 
@@ -17,6 +18,12 @@ import { RootConfig } from '../config/env.validation';
       provide: HISTORY_TOKEN_BUDGET,
       useFactory: (configService: ConfigService<RootConfig, true>) =>
         configService.get('app', { infer: true }).historyTokenBudget,
+      inject: [ConfigService],
+    },
+    {
+      provide: MAX_TOOL_ITERATIONS,
+      useFactory: (configService: ConfigService<RootConfig, true>) =>
+        configService.get('app', { infer: true }).maxToolIterations,
       inject: [ConfigService],
     },
   ],

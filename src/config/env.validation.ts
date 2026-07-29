@@ -24,6 +24,10 @@ export interface AppConfig {
    * this). See ConversationService.handleTurn + applyHistoryWindow.
    */
   historyTokenBudget: number;
+  /**
+   * Max LLM/tool-call loop iterations allowed for a single conversation turn.
+   */
+  maxToolIterations: number;
 }
 
 function isNonEmpty(value: unknown): value is string {
@@ -99,6 +103,16 @@ export function validateEnvironment(
     }
   }
 
+  if (isNonEmpty(env.MAX_TOOL_ITERATIONS)) {
+    const parsedIterations = Number(env.MAX_TOOL_ITERATIONS);
+    if (
+      !Number.isInteger(parsedIterations) ||
+      parsedIterations <= 0
+    ) {
+      errors.push('MAX_TOOL_ITERATIONS must be a positive integer');
+    }
+  }
+
   if (errors.length > 0) {
     throw new Error(
       `Invalid environment configuration:\n  - ${errors.join('\n  - ')}`,
@@ -127,5 +141,6 @@ export function loadConfig(): AppConfig {
       process.env.HISTORY_TOKEN_BUDGET ?? '24000',
       10,
     ),
+    maxToolIterations: parseInt(process.env.MAX_TOOL_ITERATIONS ?? '8', 10),
   };
 }

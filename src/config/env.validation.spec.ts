@@ -118,4 +118,29 @@ describe('validateEnvironment', () => {
       validateEnvironment({ ...baseEnv, HISTORY_TOKEN_BUDGET: '-100' }),
     ).toThrow(/HISTORY_TOKEN_BUDGET must be a positive number/);
   });
+
+  it('accepts a valid MAX_TOOL_ITERATIONS', () => {
+    expect(() =>
+      validateEnvironment({ ...baseEnv, MAX_TOOL_ITERATIONS: '12' }),
+    ).not.toThrow();
+  });
+
+  it('accepts a missing MAX_TOOL_ITERATIONS (falls back to the default)', () => {
+    expect(() => validateEnvironment(baseEnv)).not.toThrow();
+  });
+
+  it('rejects a non-integer MAX_TOOL_ITERATIONS', () => {
+    expect(() =>
+      validateEnvironment({ ...baseEnv, MAX_TOOL_ITERATIONS: '2.5' }),
+    ).toThrow(/MAX_TOOL_ITERATIONS must be a positive integer/);
+  });
+
+  it('rejects a zero or negative MAX_TOOL_ITERATIONS', () => {
+    expect(() =>
+      validateEnvironment({ ...baseEnv, MAX_TOOL_ITERATIONS: '0' }),
+    ).toThrow(/MAX_TOOL_ITERATIONS must be a positive integer/);
+    expect(() =>
+      validateEnvironment({ ...baseEnv, MAX_TOOL_ITERATIONS: '-1' }),
+    ).toThrow(/MAX_TOOL_ITERATIONS must be a positive integer/);
+  });
 });
